@@ -15,8 +15,8 @@ public class SecretController {
 	
 	private final SecretRepository secretRepository;
 	
-	private static final long TTL = 3600;
-	private static final ChronoUnit UNIT = ChronoUnit.SECONDS;
+	public static final long TTL = 3600;
+	public static final ChronoUnit UNIT = ChronoUnit.SECONDS;
 	
 	@Autowired
 	public SecretController(SecretRepository secretRepository) {
@@ -27,15 +27,40 @@ public class SecretController {
     public Status validate(@RequestBody Secret secret) {
 		Status state = Status.unknown();
 		HashedSecret hashedSecret = secretRepository.findSecret(secret.getIdentifier());
+		boolean revalidate = secret.getMySecret() == null? false:true;
 		
 		if(hashedSecret == null) {
 			state = Status.unknown();
-		}else if(hashedSecret.hasExpired(TTL, UNIT)) {
+		}else if(!revalidate && hashedSecret.hasExpired(TTL, UNIT)) {
 			state = Status.expired();
 		}else if(!hashedSecret.isValid(secret)) {
 			state = Status.inValid();
 		}else {
 			state = Status.valid();
+		}
+		
+		return state;
+	}
+	
+	@RequestMapping(value = "/secret/clear", method = RequestMethod.POST)
+    public Status clear(@RequestBody Secret secret) {
+		Status state = Status.unknown();
+		boolean result = secretRepository.clear(secret.getIdentifier());
+		
+		if(!result) {
+			state = Status.inValid();
+		}
+		
+		return state;
+	}
+	
+	@RequestMapping(value = "/secret/expire", method = RequestMethod.POST)
+    public Status expire(@RequestBody Secret secret) {
+		Status state = Status.expired();
+		boolean result = secretRepository.expire(secret.getIdentifier());
+		
+		if(!result) {
+			state = Status.inValid();
 		}
 		
 		return state;

@@ -91,6 +91,11 @@ public class HashUtil {
 	 * @return true if the password is correct, false if not
 	 */
 	public static boolean validatePassword(String password, String correctHash) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		if(password == null || password.isEmpty()  || password.trim().isEmpty()){
+			return false;
+		}
+		System.out.println(">>> Password="+ password);
+		
 		return validatePassword(password.toCharArray(), correctHash);
 	}
 

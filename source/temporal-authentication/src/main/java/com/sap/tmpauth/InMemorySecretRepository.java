@@ -21,5 +21,23 @@ public class InMemorySecretRepository implements SecretRepository {
 	public HashedSecret findSecret(String identifier) {
 		return this.secrets.get(identifier);
 	}
+	
+	@Override
+	public boolean clear(String identifier) {
+		if(this.secrets.containsKey(identifier)){
+			this.secrets.remove(identifier);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean expire(String identifier) {
+		if(this.secrets.containsKey(identifier)){
+			this.secrets.get(identifier).setExpired();
+			return true;
+		}
+		return false;
+	}
 
 }
